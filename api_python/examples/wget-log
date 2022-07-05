@@ -1,0 +1,6 @@
+--2022-06-29 10:15:00--  https://artifactory.kinovaapps.com/ui/api/v1/download?repoKey=generic-public
+Resolving artifactory.kinovaapps.com (artifactory.kinovaapps.com)... 52.232.133.120
+Connecting to artifactory.kinovaapps.com (artifactory.kinovaapps.com)|52.232.133.120|:443... connected.
+HTTP request sent, awaiting response... 500 Internal Server Error
+2022-06-29 10:15:01 ERROR 500: Internal Server Error.
+
