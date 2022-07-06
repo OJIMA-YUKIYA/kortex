@@ -1,0 +1,40 @@
+#!/bin/bash
+
+set -ex
+
+if [[ $(ps | grep momo_x64 | grep -v 'run') ]]; then
+    killall momo_x64
+fi
+
+if [[ $(ps | grep momo_xavier | grep -v 'run') ]]; then
+    killall momo_xavier
+fi
+
+# if [[ $(ps | grep momo_raspberry | grep -v 'run') ]]; then
+#     killall momo_raspberry
+# fi
+
+if [[ $(ps | grep socat) ]]; then
+    killall socat
+fi
+
+socat pty,echo=0,raw,link=./serial_out  pty,raw,echo=0,link=./webrtc_momo/serial_in &
+
+cd webrtc_momo
+
+if [ $(arch) = 'aarch64' ]; then
+    ./momo_xavier_2022.2.0 --no-audio-device --no-video-device --serial ./serial_in,9600 test --document-root ./html &
+elif [ $(arch) = 'armv7l' ]; then
+    ./momo_raspberry_2021.6.0 --no-audio-device --no-video-device --serial ./serial_in,9600 test --document-root ./html &
+elif [ $(arch) = 'x86_64' ]; then
+    ./momo_x64 --no-audio-device --serial ./serial_in,9600 test --document-root ./html &
+fi
+
+# ./momo_arm64 --no-audio-device --no-video-device --serial ./serial_in,9600 test --document-root ./html &
+# ./momo_arm64 --no-audio-device --video-device /dev/video0 --serial ./serial_in,9600 test &
+# ./momo_arm64 --hw-mjpeg-decoder false --resolution 4K --video-device /dev/video0 --serial ./serial_in,9600 test &
+
+
+cd ..
+
+echo "start momo"

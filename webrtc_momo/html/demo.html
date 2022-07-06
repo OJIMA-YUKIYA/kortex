@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=520">
+    <link rel="icon" type='image/png' href="../momo_icon.png">
+    <style type="text/css">
+    main div {
+        margin: 0;
+        padding: 0;
+    }
+    .VelocityStatus {
+        float: left;
+        width: 40%;
+        background-color: #ddd;
+    }
+    .SegwayStatusStamped {
+        float: right;
+        width: 60%;
+        background-color: #eee;
+    }
+    </style>
+    <title>Momo P2P</title>
+  </head>
+  <body>
+    <!-- <h4>Momo P2P</h4> -->
+    <!-- 最初に接続をクリック -->
+    <div>
+      <select id="codec">
+        <option value="H264">H264</option>
+        <option value="VP8">VP8</option>
+        <option value="VP9">VP9</option>
+        <option value="AV1">AV1</option>
+      </select>
+      <input type="button" onclick="connect();" id="connect" value="接続" style="width: 100px; height: 50px; margin: 10px;">
+      <input type="button" onclick="disconnect();" value="切断">
+      <!-- <input type="button" onclick="play();" value="Play"><br> -->
+    </div>
+    <div>
+      <video id="remote_video" autoplay style="border: 3px solid gray; display: none;"></video>
+    </div>
+    <div id="warning"></div>
+    <!-- <img src="./img.png"><br> -->
+    加速度 (> 0)　　　　<input type="range" id="accel_text" onchange="cal_velocity_plan()" min="0.05" max="6.0" step="0.05" value="0.05" oninput="this.nextElementSibling.value = this.value" style="width: 40%;"><output>0.05</output> (m/s^2) <br><br>
+    最高速度　 　　　　<input type="range" id="max_velocity_text" onchange="cal_velocity_plan()" min="0.05" max="4.00" step="0.05" value="0.05" oninput="this.nextElementSibling.value = this.value" style="width: 40%;"><output>0.05</output> (m/s) <br><br>
+    最高速度で走る時間 <input type="range" id="T2_text" onchange="cal_velocity_plan()" min="0.0" max="20" step="0.5" value="0" oninput="this.nextElementSibling.value = this.value" style="width: 40%;"><output>0</output> (s) <br><br>
+    <!-- <input type="radio" name="q1" checked> 前進 <br><br> -->
+    <!-- <input type="radio" name="q1"> 後退<br><br> -->
+    <input type="radio" name="q2"> offset <input id="offset_input" type="number" value="0.04" step="0.01" style="width: 50px">
+    <input type="radio" name="q3" checked style="float: right; margin-top: 30px; margin-right: 50px; width: 100px; height: 100px;"><br>
+    <input type="radio" name="q2"> gain <input id="gain_input" type="number" step="0.1" style="width: 50px"><br>
+    <input type="radio" name="q2" checked> none <br>
+    回数 <input id="count_input" type="number" step="1" value="1" style="width: 50px"><br>
+    <font size="5"><pre><div id="result_velocity_plan"></div></pre></font>
+    <input type="button" onclick="sendDataChannel();" value="送信">
+    <div style="touch-action: none; width: 500px; height: 150px; padding-top: 60px;">
+        <button id="d-left" onclick="d_left();" style="float: left; width: 70px; height: 70px;">左修正</button>
+        <button onclick="quit_accel_cmd();" style="float: left; width: 300px; height: 100px; margin-left: 30px;"><font size="5">強制停車</font></button>
+        <button id="d-right" onclick="d_right();" style="float: right; width: 70px; height: 70px;">右修正</button>
+    </div>
+    <h4>joystick</h4>
+    <div id="log"></div>
+    反時計周り<input type="range" id="leftright" max="127" min="-127" step="1" value="0" style="width: 100px;"></input><div id="leftright_out" style="display: inline-block; _display: inline;">0</div><br>
+    前方　　　<input type="range" id="frontrear" max="127" min="-127" step="1" value="0" style="width: 100px;"></input><div id="frontrear_out" style="display: inline-block; _display: inline;">0</div><br>
+    左横方向　<input type="range" id="side" max="127" min="-127" step="1" value="0" style="width: 100px;"></input><div id="side_out" style="display: inline-block; _display: inline;">0</div><br><br>
+    <input type="radio" name="q3" style="float: right; margin-top: -100px; margin-right: 50px; width: 100px; height: 100px;">
+    <input id="logstartbutton" type="button" onclick="startLog();" value="記録開始">　<input id="logendbutton" type="button" onclick="endLog();" value="記録終了">
+    <main>
+        <div class="VelocityStatus">
+            セグウェイに送信した情報<br>
+            <a id="download1" href="#" download="target_velocity.log" onclick="handleTargetVelDownload()">ダウンロード</a>
+            <font size="4">
+                <pre><div id="sgvs"></div></pre>
+            </font>
+            <br>
+        </div>
+        <div class="SegwayStatusStamped">
+            セグウェイから受信した情報 <br>
+            <a id="download2" href="" onclick="handleActualVelDownload()">ダウンロード</a><br>
+            <!-- <button id="download2" onclick="handleActualVelDownload()">ダウンロード</button><br> -->
+            <font size="4">
+                <pre><div id="sgss"></div></pre>
+            </font>
+            <br>
+        </div>
+    </main>
+    <script type='text/javascript' src='./js/webrtc.js'></script>
+  </body>
+</html>

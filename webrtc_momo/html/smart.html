@@ -1,0 +1,218 @@
+<!doctype html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="icon" type='image/png' href="../momo_icon.png">
+    <title>Momo P2P</title>
+</head>
+<body>
+    <div id="remote_video"></div>
+    <canvas id="myPics" width="200" height="200"></canvas>
+    <canvas id="myPics2" width="200" height="200"></canvas>
+    <div id="side">
+        <canvas id="myPicsside" width="400" height="100"></canvas>
+    </div>
+    <style type="text/css">
+        #myPics {
+            border: 1px solid black;
+            width: 200px;
+            height: 200px;
+            position: absolute;
+            background: gray;
+            top: 150px;
+            left: 50px;
+            touch-action: none;
+            /* touchAction: none; */
+            /* border-radius: 50%; */
+        }
+        #myPics2 {
+            border: 1px solid black;
+            width: 200px;
+            height: 200px;
+            position: absolute;
+            background: gray;
+            top: 150px;
+            right: 50px;
+            touch-action: none;
+            /* touchAction: none; */
+            /* border-radius: 50%; */
+        }
+        #myPicsside {
+            border: 1px solid black;
+            width: 400px;
+            height: 100px;
+            position: absolute;
+            background: gray;
+            top: 200px;
+            margin: 0 auto;
+            touch-action: none;
+        }
+        #side {
+            width: 400px;
+            margin: 0 auto;
+        }
+    </style>
+    <script type='text/javascript' src='./js/webrtc_smart.js'></script>
+    <script type="text/javascript">
+    console.log(window.DeviceOrientationEvent);
+
+    connect();
+
+    let x = 100;
+    let y = 100;
+
+    const myPics = document.getElementById('myPics');
+    const context = myPics.getContext('2d');
+    context.fillStyle = "black";
+    context.fillRect(0, myPics.height/2 - 5, myPics.width, 10);
+    context.fillRect(myPics.width/2 - 5, 0, 10, myPics.height);
+    context.fillStyle = "red";
+    context.fillRect(x - 25, y - 25, 50, 50);
+
+    let x2 = 100;
+    let y2 = 100;
+
+    const myPics2 = document.getElementById('myPics2');
+    const context2 = myPics2.getContext('2d');
+    context2.fillStyle = "black";
+    context2.fillRect(0, myPics2.height/2 - 5, myPics2.width, 10);
+    context2.fillRect(myPics2.width/2 - 5, 0, 10, myPics2.height);
+    context2.fillStyle = "red";
+    context2.fillRect(x2 - 25, y2 - 25, 50, 50);
+
+    let xside = 200;
+
+    const myPicsside = document.getElementById('myPicsside');
+    const contextside = myPicsside.getContext('2d');
+    contextside.fillStyle = "red";
+    contextside.fillRect(xside - 50, 50 - 50, 100, 100);
+
+    document.addEventListener('touchstart', e => {
+        if (e.target == myPics) {
+            x = e.targetTouches[0].clientX - e.target.offsetLeft;
+            y = e.targetTouches[0].clientY - e.target.offsetTop;
+            context.clearRect(0, 0, e.target.width, e.target.height);
+            context.fillStyle = "black";
+            context.fillRect(0, e.target.height/2 - 5, e.target.width, 10);
+            context.fillRect(e.target.width/2 - 5, 0, 10, e.target.height);
+            context.fillStyle = "red";
+            context.fillRect(x - 25, y - 25, 50, 50);
+        }
+        if (e.target == myPics2) {
+            x2 = e.targetTouches[0].clientX - e.target.offsetLeft;
+            y2 = e.targetTouches[0].clientY - e.target.offsetTop;
+            context2.clearRect(0, 0, e.target.width, e.target.height);
+            context2.fillStyle = "black";
+            context2.fillRect(0, e.target.height/2 - 5, e.target.width, 10);
+            context2.fillRect(e.target.width/2 - 5, 0, 10, e.target.height);
+            context2.fillStyle = "red";
+            context2.fillRect(x2 - 25, y2 - 25, 50, 50);
+        }
+        if (e.target == myPicsside) {
+            xside = e.targetTouches[0].clientX - e.target.offsetLeft;
+            contextside.clearRect(0, 0, e.target.width, e.target.height);
+            contextside.fillStyle = "red";
+            contextside.fillRect(xside - 50, 50 - 50, 100, 100);
+        }
+    });
+
+    document.addEventListener('touchmove', e => {
+        if (e.target == myPics) {
+            x = e.targetTouches[0].clientX - e.target.offsetLeft;
+            y = e.targetTouches[0].clientY - e.target.offsetTop;
+            context.clearRect(0, 0, e.target.width, e.target.height);
+            context.fillStyle = "black";
+            context.fillRect(0, e.target.height/2 - 5, e.target.width, 10);
+            context.fillRect(e.target.width/2 - 5, 0, 10, e.target.height);
+            context.fillStyle = "red";
+            if (x > e.target.width) {
+                x = e.target.width;
+            }
+            if (x < 0) {
+                x = 0;
+            }
+            if (y > e.target.height) {
+                y = e.target.height;
+            }
+            if (y < 0) {
+                y = 0;
+            }
+            context.fillRect(x - 25, y - 25, 50, 50);
+        }
+        if (e.target == myPics2) {
+            x2 = e.targetTouches[0].clientX - e.target.offsetLeft;
+            y2 = e.targetTouches[0].clientY - e.target.offsetTop;
+            context2.clearRect(0, 0, e.target.width, e.target.height);
+            context2.fillStyle = "black";
+            context2.fillRect(0, e.target.height/2 - 5, e.target.width, 10);
+            context2.fillRect(e.target.width/2 - 5, 0, 10, e.target.height);
+            context2.fillStyle = "red";
+            if (x2 > e.target.width) {
+                x2 = e.target.width;
+            }
+            if (x2 < 0) {
+                x2 = 0;
+            }
+            if (y2 > e.target.height) {
+                y2 = e.target.height;
+            }
+            if (y2 < 0) {
+                y2 = 0;
+            }
+            context2.fillRect(x2 - 25, y2 - 25, 50, 50);
+        }
+        if (e.target == myPicsside) {
+            xside = e.targetTouches[0].clientX - e.target.offsetLeft;
+            if (xside > e.target.width) {
+                xside = e.target.width;
+            }
+            if (xside < 0) {
+                xside = 0;
+            }
+            contextside.clearRect(0, 0, e.target.width, e.target.height);
+            contextside.fillStyle = "red";
+            contextside.fillRect(xside - 50, 50 - 50, 100, 100);
+        }
+    });
+
+    document.addEventListener('touchend', e => {
+        if (e.target == myPics) {
+            context.clearRect(0, 0, e.target.width, e.target.height);
+            context.fillStyle = "black";
+            context.fillRect(0, e.target.height/2 - 5, e.target.width, 10);
+            context.fillRect(e.target.width/2 - 5, 0, 10, e.target.height);
+            context.fillStyle = "red";
+            x = 100;
+            y = 100;
+            context.fillRect(x - 25, y - 25, 50, 50);
+        }
+        if (e.target == myPics2) {
+            context2.clearRect(0, 0, e.target.width, e.target.height);
+            context2.fillStyle = "black";
+            context2.fillRect(0, e.target.height/2 - 5, e.target.width, 10);
+            context2.fillRect(e.target.width/2 - 5, 0, 10, e.target.height);
+            context2.fillStyle = "red";
+            x2 = 100;
+            y2 = 100;
+            context2.fillRect(x2 - 25, y2 - 25, 50, 50);
+        }
+        if (e.target == myPicsside) {
+            contextside.clearRect(0, 0, e.target.width, e.target.height);
+            contextside.fillStyle = "red";
+            xside = 200;
+            contextside.fillRect(xside - 50, 50 - 50, 100, 100);
+        }
+    });
+
+
+    setInterval(sendLoop, 1000/20);
+    function sendLoop() {
+        dataChannel.send(new Uint8Array([0x43, 127*(-xside + myPicsside.width/2)/(myPicsside.width/2), -127*(x - myPics.width/2)/(myPics.width/2),  127*(-y2 + myPics2.height/2)/(myPics2.height/2)]));
+    }
+
+    window.addEventListener('deviceorientation', e => {
+        console.log(e);
+    });
+
+    </script>
+</html>

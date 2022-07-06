@@ -1,0 +1,236 @@
+<!doctype html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="icon" type='image/png' href="../momo_icon.png">
+    <style type="text/css">
+    main div {
+        margin: 0;
+        padding: 0;
+    }
+    .VelocityStatus {
+        float: left;
+        width: 50%;
+        background-color: #ddd;
+    }
+    .SegwayStatusStamped {
+        float: right;
+        width: 50%;
+        background-color: #eee;
+    }
+    </style>
+    <title>Momo P2P</title>
+  </head>
+  <body>
+    <h3>Momo P2P</h3>
+    最初に接続をクリック
+    <div>
+      <!-- <select id="codec"> -->
+        <!-- <option value="H264">H264</option> -->
+        <!-- <option value="VP8">VP8</option> -->
+        <!-- <option value="VP9">VP9</option> -->
+        <!-- <option value="AV1">AV1</option> -->
+      <!-- </select> -->
+      <input type="button" onclick="connect();" id="connect" value="接続">
+      <input type="button" onclick="disconnect();" value="切断">
+      <!-- <input type="button" onclick="play();" value="Play"><br> -->
+    <!-- </div> -->
+    <!-- <div> -->
+    <video id="remote_video" style="display: none;"></video>
+      <!-- <video id="remote_video" autoplay style="border: 3px solid gray;"></video> -->
+    <!-- </div> -->
+    <!-- <div id="warning"></div> -->
+    <!-- <img src="./img.png"><br> -->
+    <!-- 加速度 (> 0)　　　　<input type="range" id="accel_text" onchange="cal_velocity_plan()" min="0.05" max="0.5" step="0.05" value="0.05" oninput="this.nextElementSibling.value = this.value"><output>0.05</output> (m/s^2) <br> -->
+    <!-- 最高速度　 　　　　<input type="range" id="max_velocity_text" onchange="cal_velocity_plan()" min="0.05" max="1.0" step="0.05" value="0.05" oninput="this.nextElementSibling.value = this.value"><output>0.05</output> (m/s) <br> -->
+    <!-- 最高速度で走る時間 <input type="range" id="T2_text" onchange="cal_velocity_plan()" min="0.5" max="10" step="0.5" value="0.5" oninput="this.nextElementSibling.value = this.value"><output>0.5</output> (s) <br> -->
+    <!-- <input type="radio" name="q1" checked> 前進 -->
+    <!-- <input type="radio" name="q1"> 後退 -->
+    <!-- <pre><div id="result_velocity_plan"></div></pre> -->
+    <!-- <input type="button" onclick="sendDataChannel();" value="送信">　　<input type="button" onclick="quit_accel_cmd();" value="強制終了"><br><br> -->
+    <!-- <h4>joystick</h4> -->
+    <!-- 反時計周り<input type="range" id="leftright" max="50" min="-50" step="0.000001" value="0"></input><div id="leftright_out" style="display: inline-block; _display: inline;">0</div>(deg/sec)<br> -->
+    <!-- 前方　　　<input type="range" id="frontrear" max="0.7" min="-0.7" step="0.000001" value="0"></input><div id="frontrear_out" style="display: inline-block; _display: inline;">0</div>(m/sec)<br><br> -->
+    <!-- <input id="logstartbutton" type="button" onclick="startLog();" value="記録開始">　<input id="logendbutton" type="button" onclick="endLog();" value="記録終了"> -->
+    <main>
+        <div class="VelocityStatus">
+            セグウェイに送信した情報<br>
+            <font size="4">
+                <pre><div id="sgvs"></div></pre>
+            </font>
+            <br>
+        </div>
+        <div class="SegwayStatusStamped">
+            セグウェイから受信した情報 <br>
+            <font size="4">
+                <pre><div id="sgss"></div></pre>
+            </font>
+            <br>
+        </div>
+    </main>
+    <!-- <script type='text/javascript' src='./js/sora.min.js'></script> -->
+    <script type="text/javascript">
+        let CLOSE_DATA_CHANNEL = false;
+        let RESTART = true;
+    </script>
+    <script type='text/javascript' src='./js/sora.js'></script>
+    <script type='text/javascript' src='./js/webrtc_test.js'></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script type="text/javascript">
+        // const debug = true;
+        // // const sora = Sora.connection("wss://207-148-92-89.stable.sora.sora-labo.shiguredo.app/signaling", debug);
+        // const sora = Sora.connection("wss://sora.ikeilabsora.0am.jp/signaling", debug);
+        // // const channelId = "OJIMA-YUKIYA@sora-devtools";
+        // const channelId = "twincam-left"
+        // // const metadata = {
+        // //     "signaling_key": "0mKFzDghLJNL7bmqa99hj4pp13IGaG_o4SHWdHoIKMzffpyZwQmo5dOIVi_9QBZ_",
+        // // };
+        // const options = {
+        //     multistream: true,
+        //     video: false,
+        //     audio: true,
+        //     dataChannelSignaling: true,
+        //     dataChannels: [
+        //         {
+        //             label: "#sora-devtools",
+        //             direction: "sendrecv"
+        //         }
+        //     ]
+        // };
+        // let recvonly = sora.recvonly(channelId, null, options);
+        // recvonly.connect();
+
+        // recvonly.on("track", (event) => {
+        //     const stream = event.streams[0];
+        //     if (!document.querySelector(`#remote-video-${stream.id}`)) {
+        //         const video = document.createElement("video");
+        //         video.id = `remote-video-${stream.id}`;
+        //         video.autoplay = true;
+        //         video.playsinline = true;
+        //         video.srcObject = stream;
+        //         document.querySelector("#remote-videos").appendChild(video);
+        //     }
+        // });
+        //
+        // recvonly.on("removetrack", (event) => {
+        //     if (document.querySelector(`#remote-video-${event.target.id}`)) {
+        //         document.querySelector(`#remote-video-${event.target.id}`).remove();
+        //     }
+        // });
+
+        recvonly.connect()
+
+        recvonly.on('message', (event) => {
+            // console.log(new Int8Array(event.data));
+            // console.log(event.data);
+            // let msg = new TextDecoder().decode(event.data);
+            // console.log('sora recieve: ' + msg);
+            // if (dataChannel == null) {
+            //     console.log("hello");
+            // }
+            // dataChannel.send(new TextEncoder().encode(msg));
+
+            // console.log("message");
+
+            if (new Uint8Array(event.data)[0] == 0x43 && event.data.byteLength == 4) {
+                if (dataChannel) {
+                    if (dataChannel.readyState == 'open') {
+                        dataChannel.send(event.data);
+                    }
+                    else {
+                        connect();
+                    }
+                }
+            }
+            else if (new Uint8Array(event.data)[0] == 0x44 && event.data.byteLength == 4) {
+                if (dataChannel) {
+                    if (dataChannel.readyState == 'open') {
+                        dataChannel.send(event.data);
+                    }
+                    else {
+                        connect();
+                    }
+                }
+            }
+            else if (new Uint8Array(event.data)[0] == 0xe0 && event.data.byteLength == 2) {
+                if (dataChannel) {
+                    if (dataChannel.readyState == 'open') {
+                        dataChannel.send(event.data);
+                    }
+                    else {
+                        connect();
+                    }
+                }
+            }
+        });
+
+        // setInterval(observe_wifi, 5000);
+        // observe_wifi();
+        //
+        // function observe_wifi() {
+        //     if (!recvonly.signalingSwitched) {
+        //         recvonly.connect();
+        //     }
+        // }
+
+        // let currentIP = '';
+        // let oldIP = '';
+        //
+        // oldIP = currentIP;
+        //
+        // setInterval(observe_IP, 5000)
+        //
+        // async function observe_IP() {
+        //     try {
+        //         const response = await axios.get('https://api.ipify.org?format=json');
+        //         currentIP = response.data.ip;
+        //         console.log(currentIP);
+        //         if (currentIP != oldIP && oldIP != '') {
+        //             recvonly.connect();
+        //         }
+        //         oldIP = currentIP;
+        //     } catch (error) {
+        //         console.error(error);
+        //     }
+        // }
+
+        setInterval(observe_CLOSE_DATA_CHANNEL, 10000);
+        function observe_CLOSE_DATA_CHANNEL() {
+            if (CLOSE_DATA_CHANNEL) {
+                if (!recvonly.signalingSwitched) {
+                    disconnect();
+                    recvonly.connect();
+                }
+            }
+            if (RESTART) {
+                RESTART = false;
+                // disconnect();
+                connect();
+            }
+        }
+
+
+
+
+        // setInterval(sendHello, 1000.0*3.0);
+        // let counta = 0;
+        // function sendHello() {
+        //     counta = counta + 1;
+        //     recvonly.sendMessage("#sora-devtools", new TextEncoder().encode("Hello from xavier nx " + counta));
+        // }
+
+
+        // navigator.mediaDevices
+        // .getUserMedia({ audio: true, video: true })
+        // .then((stream) => sendrecv.connect(stream))
+        // .then((stream) => {
+        //   document.querySelector("#local-video").srcObject = stream;
+        //
+        // })
+        // .catch((e) => {
+        //   console.error(e);
+        // });
+    </script>
+    <!-- <script type="text/javascript">document.getElementById("connect").click();</script> -->
+  </body>
+</html>
