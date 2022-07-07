@@ -3,3 +3,5 @@ kortex_api*.zip
 api_cpp/examples/build*
 .vscode/
 __pycache__/
+serial_in
+serial_out

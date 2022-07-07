@@ -16,6 +16,8 @@ import sys
 import os
 import time
 import threading
+import serial
+import numpy  as np
 
 from kortex_api.autogen.client_stubs.BaseClientRpc import BaseClient
 from kortex_api.autogen.client_stubs.BaseCyclicClientRpc import BaseCyclicClient
@@ -24,6 +26,8 @@ from kortex_api.autogen.messages import Base_pb2, BaseCyclic_pb2, Common_pb2
 
 # Maximum allowed waiting time during actions (in seconds)
 TIMEOUT_DURATION = 20
+
+buff = [0, 0, 0, 0, 0, 0]
 
 # Create closure to set an event after an END or an ABORT
 def check_for_end_or_abort(e):
@@ -54,7 +58,7 @@ def example_move_to_home_position(base):
     action_list = base.ReadAllActions(action_type)
     action_handle = None
     for action in action_list.action_list:
-        if action.name == "Home":
+        if action.name == "Retract":
             action_handle = action.handle
 
     if action_handle == None:
@@ -114,13 +118,22 @@ def example_cartesian_action_movement(base, base_cyclic, dx, dy, dz,theta_x,thet
         print("Timeout on action notification wait")
     return finished
 
+    
+
 def main():
+    global buff
+    recive = np.array([0,0,0,0,0,0])
+    
+    readSerial = serial.Serial("../serial_out",9600)
     
     # Import the utilities helper module
+
+
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
     import utilities
 
     # Parse arguments
+
     args = utilities.parseConnectionArguments()
     
     # Create connection to the device and get the router
@@ -130,6 +143,7 @@ def main():
         base = BaseClient(router)
         base_cyclic = BaseCyclicClient(router)
 
+
         # Example core
         success = True
 
@@ -137,7 +151,12 @@ def main():
         feedback = base_cyclic.RefreshFeedback()
         print(feedback.base.tool_pose_x ,feedback.base.tool_pose_y,feedback.base.tool_pose_z,feedback.base.tool_pose_theta_x,feedback.base.tool_pose_theta_y, feedback.base.tool_pose_theta_z)
         while 1:
-            dx, dy, dz, theta_x, theta_y, theta_z = map(float, input().split())
+            buff = readSerial.read(6)
+            for i in range(6):
+                recive[i] = np.array(buff[i],dtype ='int8')
+
+            dx, dy, dz, theta_x, theta_y, theta_z = recive[0], recive[1], recive[2], recive[3], recive[4], recive[5]
+            print(dx, "-----------------")
             success &= example_cartesian_action_movement(base, base_cyclic,dx, dy, dz, theta_x, theta_y, theta_z)
             feedback = base_cyclic.RefreshFeedback()
             print(feedback.base.tool_pose_x ,feedback.base.tool_pose_y,feedback.base.tool_pose_z,feedback.base.tool_pose_theta_x,feedback.base.tool_pose_theta_y, feedback.base.tool_pose_theta_z)
@@ -146,6 +165,10 @@ def main():
         # a trajectory defined by a series of waypoints in joint space or in Cartesian space
 
         return 0 if success else 1
+
+
+
+
 
 if __name__ == "__main__":
     exit(main())

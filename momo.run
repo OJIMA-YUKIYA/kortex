@@ -18,12 +18,12 @@ if [[ $(ps | grep socat) ]]; then
     killall socat
 fi
 
-socat pty,echo=0,raw,link=./serial_out  pty,raw,echo=0,link=./webrtc_momo/serial_in &
+socat pty,echo=0,raw,link=./serial_out  pty,raw,echo=0,link=./serial_in &
 
 cd webrtc_momo
 
 if [ $(arch) = 'aarch64' ]; then
-    ./momo_xavier_2022.2.0 --no-audio-device --no-video-device --serial ./serial_in,9600 test --document-root ./html &
+    ./momo_xavier_2022.2.0 --no-audio-device --no-video-device --serial ../serial_in,9600 test --document-root ./html &
 elif [ $(arch) = 'armv7l' ]; then
     ./momo_raspberry_2021.6.0 --no-audio-device --no-video-device --serial ./serial_in,9600 test --document-root ./html &
 elif [ $(arch) = 'x86_64' ]; then
